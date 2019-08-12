@@ -315,16 +315,6 @@ public class SpeechToTextSession {
         (Opus compression reduces latency and bandwidth.)
      */
     public func startMicrophone(compress: Bool = true) {
-        self.compress = compress
-
-        // reset encoder
-        // swiftlint:disable:next force_try
-        encoder = try! SpeechToTextEncoder(
-            format: recorder.format,
-            opusRate: Int32(recorder.format.mSampleRate),
-            application: .voip
-        )
-
         // request recording permission
         recorder.session.requestRecordPermission { granted in
             guard granted else {
@@ -334,31 +324,12 @@ public class SpeechToTextSession {
                 return
             }
 
-            // callback if uncompressed
-            let onMicrophoneDataPCM = { [weak self] (pcm: Data) in
-                guard let self = self else { return }
-                guard pcm.count > 0 else { return }
-                self.socket.writeAudio(audio: pcm)
-                self.onMicrophoneData?(pcm)
-            }
+            let onSpeechData = startStreaming(format: self.recorder.format, compress: compress)
 
-            // callback if compressed
-            let onMicrophoneDataOpus = { [weak self] (pcm: Data) in
-                guard let self = self else { return }
-                guard pcm.count > 0 else { return }
-                // swiftlint:disable:next force_try
-                try! self.encoder.encode(pcm: pcm)
-                let opus = self.encoder.bitstream(flush: true)
-                guard opus.count > 0 else { return }
-                self.socket.writeAudio(audio: opus)
-                self.onMicrophoneData?(opus)
-            }
-
-            // set callback
-            if compress {
-                self.recorder.onMicrophoneData = onMicrophoneDataOpus
-            } else {
-                self.recorder.onMicrophoneData = onMicrophoneDataPCM
+            self.recorder.onMicrophoneData = { [weak self] (pcm: Data) in
+                if let data = onSpeechData(pcm: pcm) {
+                    self?.onMicrophoneData?(data)
+                }
             }
 
             // start recording
@@ -371,6 +342,40 @@ public class SpeechToTextSession {
                 return
             }
         }
+    }
+
+    public func startStreaming(format: AudioStreamBasicDescription, compress: Bool = true) -> ((pcm: Data) -> Data?) {
+        self.compress = compress
+
+        // reset encoder
+        // swiftlint:disable:next force_try
+        encoder = try! SpeechToTextEncoder(
+            format: format,
+            opusRate: Int32(format.mSampleRate),
+            application: .voip
+        )
+
+        // callback if uncompressed
+        let onSpeechDataPCM = { [weak self] (pcm: Data) in
+            guard let self = self else { return nil }
+            guard pcm.count > 0 else { return nil }
+            self.socket.writeAudio(audio: pcm)
+            return pcm
+        }
+
+        // callback if compressed
+        let onSpeechDataOpus = { [weak self] (pcm: Data) in
+            guard let self = self else { return nil }
+            guard pcm.count > 0 else { return nil }
+            // swiftlint:disable:next force_try
+            try! self.encoder.encode(pcm: pcm)
+            let opus = self.encoder.bitstream(flush: true)
+            guard opus.count > 0 else { return nil }
+            self.socket.writeAudio(audio: opus)
+            return opus
+        }
+
+        return compress ? onSpeechDataOpus : onSpeechDataPCM
     }
 
     /**
@@ -386,12 +391,7 @@ public class SpeechToTextSession {
             return
         }
 
-        if compress {
-            // swiftlint:disable:next force_try
-            let opus = try! encoder.endstream()
-            guard opus.count > 0 else { return }
-            self.socket.writeAudio(audio: opus)
-        }
+        self.stopStreaming()
     }
 
     /**
@@ -399,6 +399,15 @@ public class SpeechToTextSession {
      */
     public func stopRequest() {
         socket.writeStop()
+    }
+
+    public func stopStreaming() {
+        if compress {
+            // swiftlint:disable:next force_try
+            let opus = try! encoder.endstream()
+            guard opus.count > 0 else { return }
+            self.socket.writeAudio(audio: opus)
+        }
     }
 
     /**

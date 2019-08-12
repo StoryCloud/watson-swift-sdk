@@ -1177,7 +1177,7 @@
 		7A6C7B3C1D8C960300CD97FA /* WatsonCredentials.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WatsonCredentials.swift; path = Source/SupportingFiles/WatsonCredentials.swift; sourceTree = "<group>"; };
 		7A9EC8071D79B75100507725 /* SpeechToTextEncoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechToTextEncoder.swift; sourceTree = "<group>"; };
 		7A9EC8081D79B75100507725 /* SpeechToTextRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechToTextRecorder.swift; sourceTree = "<group>"; };
-		7A9EC8091D79B75100507725 /* SpeechToTextSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechToTextSession.swift; sourceTree = "<group>"; };
+		7A9EC8091D79B75100507725 /* SpeechToTextSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = SpeechToTextSession.swift; sourceTree = "<group>"; tabWidth = 4; };
 		7A9EC81F1D79D7E300507725 /* SpeechToTextSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechToTextSocket.swift; sourceTree = "<group>"; };
 		7A9EC8211D79D8F300507725 /* SpeechToTextState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechToTextState.swift; sourceTree = "<group>"; };
 		7AAA9A1D1CEE3026002C9564 /* SpeechToText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SpeechToText.swift; sourceTree = "<group>"; };
