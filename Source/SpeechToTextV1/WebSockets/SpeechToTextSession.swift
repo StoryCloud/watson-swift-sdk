@@ -344,7 +344,7 @@ public class SpeechToTextSession {
         }
     }
 
-    public func startStreaming(format: AudioStreamBasicDescription, compress: Bool = true) -> ((pcm: Data) -> Data?) {
+    public func startStreaming(format: AudioStreamBasicDescription, compress: Bool = true) -> (Data -> Data?) {
         self.compress = compress
 
         // reset encoder
