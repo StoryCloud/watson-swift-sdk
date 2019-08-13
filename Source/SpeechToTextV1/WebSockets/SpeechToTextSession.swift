@@ -324,11 +324,12 @@ public class SpeechToTextSession {
                 return
             }
 
-            let onSpeechData = self.startStreaming(format: self.recorder.format, compress: compress)
+            self.startStreaming(format: self.recorder.format, compress: compress)
 
             self.recorder.onMicrophoneData = { [weak self] (pcm: Data) in
-                if let data = onSpeechData(pcm) {
-                    self?.onMicrophoneData?(data)
+                guard let self = self else { return }
+                if let data = self.stream(data: pcm) {
+                    self.onMicrophoneData?(data)
                 }
             }
 
@@ -354,18 +355,10 @@ public class SpeechToTextSession {
             opusRate: Int32(format.mSampleRate),
             application: .voip
         )
+    }
 
-        // callback if uncompressed
-        let onSpeechDataPCM: ((Data) -> Data?) = { [weak self] (pcm: Data) in
-            guard let self = self else { return nil }
-            guard pcm.count > 0 else { return nil }
-            self.socket.writeAudio(audio: pcm)
-            return pcm
-        }
-
-        // callback if compressed
-        let onSpeechDataOpus: ((Data) -> Data?) = { [weak self] (pcm: Data) in
-            guard let self = self else { return nil }
+    public func stream(data pcm: Data) -> Data? {
+      if (compress) {
             guard pcm.count > 0 else { return nil }
             // swiftlint:disable:next force_try
             try! self.encoder.encode(pcm: pcm)
@@ -373,9 +366,11 @@ public class SpeechToTextSession {
             guard opus.count > 0 else { return nil }
             self.socket.writeAudio(audio: opus)
             return opus
+        } else {
+            guard pcm.count > 0 else { return nil }
+            self.socket.writeAudio(audio: pcm)
+            return pcm
         }
-
-        return compress ? onSpeechDataOpus : onSpeechDataPCM
     }
 
     /**
