@@ -37,7 +37,8 @@ import RestKit
 public class SpeechToText {
 
     /// The base URL to use when contacting the service.
-    public var serviceURL = "https://stream.watsonplatform.net/speech-to-text/api"
+
+    public var serviceURL = "https://api.us-south.speech-to-text.watson.cloud.ibm.com"
     internal let serviceName = "SpeechToText"
     internal let serviceVersion = "v1"
 
